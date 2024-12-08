@@ -17,13 +17,13 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Pull existing Docker image
-      run: docker pull --platform linux/amd64 geniderasmusmc/de-goulash:1
+      run: docker pull --platform linux/amd64 geniderasmusmc/yleaf
 
     - name: Save Docker image as tar
-      run: docker save geniderasmusmc/de-goulash:1 -o de-goulash-1.tar
+      run: docker save geniderasmusmc/yleaf -o yleaf.tar
 
     - name: Upload tar to GitHub Artifacts
       uses: actions/upload-artifact@v3
       with:
         name: image
-        path: de-goulash-1.tar
+        path: yleaf.tar
