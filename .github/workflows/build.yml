@@ -17,10 +17,10 @@ jobs:
         password: ${{ secrets.DOCKERHUB_TOKEN }}
 
     - name: Pull existing Docker image
-      run: docker pull --platform linux/amd64 geniderasmusmc/yleaf
+      run: docker pull --platform linux/amd64 geniderasmusmc/yleaf:2.2
 
     - name: Save Docker image as tar
-      run: docker save geniderasmusmc/yleaf -o yleaf.tar
+      run: docker save geniderasmusmc/yleaf:2.2 -o yleaf.tar
 
     - name: Upload tar to GitHub Artifacts
       uses: actions/upload-artifact@v3
