@@ -1,28 +1,38 @@
-name: Download and Package Docker Image
+name: Save NVIDIA Docker2 DEBs
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  build-and-save:
+  save-debs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Login to Docker Hub
-      uses: docker/login-action@v2
-      with:
-        username: ${{ secrets.DOCKERHUB_USERNAME }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Pull existing Docker image
-      run: docker pull --platform linux/amd64 posonkur/degoulash
-    - name: Save Docker image as tar
-      run: docker save posonkur/degoulash -o degoulash.tar
+      - name: Set up NVIDIA repository
+        run: |
+          distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
+          curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+          curl -s -L https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list | \
+            sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
+            sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
 
-    - name: Upload tar to GitHub Artifacts
-      uses: actions/upload-artifact@v3
-      with:
-        name: image
-        path: degoulash.tar
+      - name: Update package lists and download NVIDIA Docker2
+        run: |
+          sudo apt update
+          apt download -o=dir::cache=. nvidia-docker2
+          apt download -o=dir::cache=. nvidia-container-toolkit
+          apt download -o=dir::cache=. nvidia-container-runtime
+          apt download -o=dir::cache=. libnvidia-container1 libnvidia-container-tools
+
+      - name: Upload DEB packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nvidia-docker2-debs
+          path: ./*.deb
+
