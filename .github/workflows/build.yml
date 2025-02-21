@@ -18,20 +18,21 @@ jobs:
           sudo apt update
           sudo apt install -y mmdebstrap xz-utils
 
-      - name: 📦 Generate Ubuntu 22.04.5 RootFS
+      - name: 📦 Generate Ubuntu 22.04.5 RootFS with Xorg
         run: |
           sudo mmdebstrap \
             --variant=apt \
-            --include=xorg,dbus,xdm,lightdm \
+            --components="main,universe" \
+            --include=xserver-xorg,xinit,x11-xserver-utils,dbus,gdm3 \
             jammy \
-            ubuntu-22.04.5.tar.xz \
+            ubuntu-rootfs.tar.xz \
             "http://archive.ubuntu.com/ubuntu"
 
       - name: 🔍 List Generated Files
-        run: ls -lh ubuntu-22.04.5.tar.xz
+        run: ls -lh ubuntu-rootfs.tar.xz
 
       - name: 🚀 Upload RootFS Artifact
         uses: actions/upload-artifact@v4
         with:
           name: ubuntu-22.04.5-rootfs
-          path: ubuntu-22.04.5.tar.xz
+          path: ubuntu-rootfs.tar.xz
