@@ -1,4 +1,4 @@
-name: Save NVIDIA Docker2 DEBs
+name: Build Ubuntu 22.04.5 RootFS with Xorg
 
 on:
   push:
@@ -7,31 +7,31 @@ on:
   workflow_dispatch:
 
 jobs:
-  save-debs:
+  build-rootfs:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
+      - name: 📥 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: Set up NVIDIA repository
-        run: |
-          curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
-          curl -s -L https://nvidia.github.io/libnvidia-container/stable/deb/nvidia-container-toolkit.list | \
-            sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | \
-            sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
-
-      - name: Update package lists and download NVIDIA Docker2
+      - name: 🏗️ Install Dependencies
         run: |
           sudo apt update
-          apt download -o=dir::cache=. nvidia-docker2
-          apt download -o=dir::cache=. nvidia-container-toolkit
-          apt download -o=dir::cache=. nvidia-container-runtime
-          apt download -o=dir::cache=. libnvidia-container1 libnvidia-container-tools
+          sudo apt install -y mmdebstrap xz-utils
 
-      - name: Upload DEB packages
+      - name: 📦 Generate Ubuntu 22.04.5 RootFS
+        run: |
+          sudo mmdebstrap \
+            --variant=apt \
+            --include=xorg,dbus,xdm,lightdm \
+            jammy \
+            ubuntu-22.04.5.tar.xz \
+            "http://archive.ubuntu.com/ubuntu"
+
+      - name: 🔍 List Generated Files
+        run: ls -lh ubuntu-22.04.5.tar.xz
+
+      - name: 🚀 Upload RootFS Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: nvidia-docker2-debs
-          path: ./*.deb
-
+          name: ubuntu-22.04.5-rootfs
+          path: ubuntu-22.04.5.tar.xz
