@@ -1,10 +1,7 @@
 name: Build OpenWrt VMDK
 
 on:
-  workflow_dispatch: # 允许手动触发
-  push: # 推送时触发（可删除）
-    branches:
-      - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -18,9 +15,9 @@ jobs:
         run: |
           wget -O openwrt.img.gz https://mirrors.tuna.tsinghua.edu.cn/openwrt/releases/24.10.0/targets/x86/64/openwrt-24.10.0-x86-64-generic-ext4-combined-efi.img.gz
 
-      - name: 解压镜像
+      - name: 解压镜像（修正 trailing garbage 错误）
         run: |
-          gzip -d openwrt.img.gz
+          gunzip -c openwrt.img.gz > openwrt.img
 
       - name: 安装 QEMU 工具
         run: sudo apt update && sudo apt install -y qemu-utils
