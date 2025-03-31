@@ -20,6 +20,8 @@ jobs:
 
       - name: Add NVIDIA PPA and Install Driver
         run: |
+          echo 'Acquire::Keep-Downloaded-Packages "1";' | sudo tee /etc/apt/apt.conf.d/01keep-debs
+          sudo apt clean
           sudo add-apt-repository -y ppa:graphics-drivers/ppa
           sudo apt update
           sudo apt install -y nvidia-driver-570
@@ -37,7 +39,8 @@ jobs:
       - name: Collect Installed .deb Packages
         run: |
           mkdir -p deb_packages
-          cp -r /var/cache/apt/archives/*.deb deb_packages/
+          ls -l /var/cache/apt/archives/
+          cp -r /var/cache/apt/archives/* deb_packages/
 
       - name: Upload .deb Packages as Artifacts
         uses: actions/upload-artifact@v4
